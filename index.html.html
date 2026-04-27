@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alexandre Franz — Cybersecurity & Embedded Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --surface: #111620;
+    --surface2: #1a2133;
+    --border: #1e2d45;
+    --accent: #00c8ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff8a;
+    --text: #e8edf5;
+    --text-muted: #6a7d96;
+    --text-dim: #3a4f6a;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── GRID LINES ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 500px; height: 500px; background: rgba(0,200,255,0.07); top: -150px; right: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: rgba(255,107,53,0.06); bottom: 20%; left: -100px; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(57,255,138,0.05); top: 50%; right: 10%; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(30,45,69,0.6);
+    backdrop-filter: blur(20px);
+    background: rgba(10,13,18,0.7);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-logo span { color: var(--text-muted); }
+
+  nav ul { list-style: none; display: flex; gap: 32px; }
+  nav ul a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav ul a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-inner { max-width: 700px; }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  h1 .accent { color: var(--accent); }
+  h1 .dim { color: var(--text-dim); font-weight: 400; }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin: 28px 0 40px;
+    max-width: 560px;
+  }
+
+  .hero-sub strong { color: var(--text); font-weight: 500; }
+
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+  }
+  .btn-primary:hover { background: #33d4ff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,200,255,0.3); }
+
+  .btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  /* ── SKILL CHIPS ── */
+  .hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 48px;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,200,255,0.06); }
+  .chip.orange { border-color: var(--accent2); color: var(--accent2); background: rgba(255,107,53,0.06); }
+  .chip.green { border-color: var(--accent3); color: var(--accent3); background: rgba(57,255,138,0.06); }
+
+  /* ── SECTION ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 700;
+    margin-bottom: 60px;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── PROJECTS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 2px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    padding: 36px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .project-card:hover { background: var(--surface2); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .project-card:hover::before { opacity: 1; }
+
+  .project-card.featured { border-color: rgba(0,200,255,0.3); }
+  .project-card.featured::before { opacity: 0.4; }
+
+  .card-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    letter-spacing: 0.1em;
+  }
+
+  .card-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  .badge-siem { background: rgba(0,200,255,0.12); color: var(--accent); border: 1px solid rgba(0,200,255,0.25); }
+  .badge-web  { background: rgba(57,255,138,0.10); color: var(--accent3); border: 1px solid rgba(57,255,138,0.25); }
+  .badge-sec  { background: rgba(255,107,53,0.10); color: var(--accent2); border: 1px solid rgba(255,107,53,0.25); }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 2px;
+  }
+
+  .card-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: gap 0.2s;
+  }
+  .card-link:hover { gap: 10px; }
+
+  /* ── SPLUNK DASHBOARD MOCKUP ── */
+  .splunk-mockup {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 10px;
+  }
+
+  .mock-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mock-dot.r { background: #ff5f57; }
+  .mock-dot.y { background: #febc2e; }
+  .mock-dot.g { background: #28c840; }
+
+  .mock-title { color: var(--text-dim); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+
+  .mock-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mock-panel {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 3px;
+    padding: 10px;
+  }
+  .mock-panel-label { color: #3a4f6a; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .mock-stat { color: var(--accent); font-size: 18px; font-weight: 700; }
+  .mock-stat.orange { color: var(--accent2); }
+  .mock-stat.green { color: var(--accent3); }
+
+  .mock-bar-chart { margin-top: 8px; }
+  .mock-bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .mock-bar-label { color: #3a4f6a; font-size: 8px; width: 30px; flex-shrink: 0; }
+  .mock-bar-fill { height: 6px; border-radius: 1px; background: var(--accent); opacity: 0.6; }
+  .mock-bar-fill.o { background: var(--accent2); }
+  .mock-bar-fill.g { background: var(--accent3); }
+
+  .mock-spl {
+    grid-column: 1 / -1;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 3px;
+    padding: 10px;
+  }
+  .spl-line { margin-bottom: 3px; }
+  .spl-kw { color: #79b8ff; }
+  .spl-str { color: #9ecbff; }
+  .spl-op { color: #f97583; }
+  .spl-val { color: var(--accent3); }
+  .spl-fn { color: #b392f0; }
+
+  /* ── SKILLS SECTION ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2px;
+  }
+
+  .skill-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+  }
+
+  .skill-group-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .skill-group-title .icon { font-size: 14px; }
+
+  .skill-list { list-style: none; }
+  .skill-list li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .skill-list li:last-child { border-bottom: none; }
+  .skill-list li::before { content: '▸'; color: var(--text-dim); font-size: 10px; flex-shrink: 0; }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .about-text p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .about-text strong { color: var(--text); font-weight: 500; }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+
+  .stat-number {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .stat-label { font-size: 12px; color: var(--text-muted); }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .tl-item { position: relative; margin-bottom: 36px; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -36px; top: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .tl-date {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .tl-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .tl-org { font-size: 13px; color: var(--text-muted); }
+
+  /* ── CONTACT ── */
+  .contact-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .contact-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .contact-left h2 { margin-bottom: 12px; font-size: 32px; }
+  .contact-left p { color: var(--text-muted); font-size: 15px; max-width: 440px; line-height: 1.7; }
+
+  .contact-links { display: flex; flex-direction: column; gap: 12px; }
+  .contact-link {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .contact-link:hover { color: var(--accent); }
+  .contact-link .lbl { color: var(--text-dim); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; width: 60px; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 32px 48px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-inner > * {
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .hero-tag        { animation-delay: 0.1s; }
+  h1               { animation-delay: 0.2s; }
+  .hero-sub        { animation-delay: 0.35s; }
+  .hero-cta        { animation-delay: 0.5s; }
+  .hero-chips      { animation-delay: 0.65s; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .cursor { animation: blink 1s infinite; color: var(--accent); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    nav ul { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    section { padding: 60px 20px; }
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .contact-inner { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">AFPries<span>.dev</span></div>
+  <ul>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Available for internships · 2026</div>
+    <h1>
+      Alexandre<br>
+      <span class="accent">Franz</span> <span class="dim">Pries<span class="cursor">_</span></span>
+    </h1>
+    <p class="hero-sub">
+      Computer Science student building at the intersection of
+      <strong>cybersecurity</strong>, <strong>embedded systems</strong>, and
+      <strong>automotive engineering</strong>. From Brazil to Indiana —
+      Army veteran, engineer, developer.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">View Projects ↓</a>
+      <a href="https://github.com/franzx0" target="_blank" class="btn btn-ghost">GitHub ↗</a>
+      <a href="https://www.linkedin.com/in/alexandre-junior-4835aa174/" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
+    </div>
+    <div class="hero-chips">
+      <span class="chip active">Splunk / SIEM</span>
+      <span class="chip active">Node.js</span>
+      <span class="chip orange">ECU Tuning</span>
+      <span class="chip orange">CAN Bus</span>
+      <span class="chip green">REST APIs</span>
+      <span class="chip green">SQLite</span>
+      <span class="chip">JWT / Auth</span>
+      <span class="chip">NIST Frameworks</span>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-label">Work</div>
+  <h2>Projects</h2>
+
+  <div class="projects-grid">
+
+    <!-- SPLUNK — FEATURED -->
+    <div class="project-card featured" style="grid-column: span 2 / auto;">
+      <div class="card-number">01 / Featured</div>
+      <span class="card-badge badge-siem">SIEM · Fraud Detection</span>
+      <div class="card-title">Splunk Fraud Detection Dashboard</div>
+      <p class="card-desc">
+        Built a real-time fraud monitoring system in Splunk Enterprise for a simulated financial dataset.
+        Wrote targeted SPL queries to surface transaction anomalies — high-value outliers, repeated auth failures,
+        geographic spikes, and off-hours activity. Delivered a multi-panel interactive dashboard ready for SOC analyst use.
+      </p>
+
+      <!-- INLINE MOCKUP -->
+      <div class="splunk-mockup">
+        <div class="mock-bar">
+          <div class="mock-dot r"></div>
+          <div class="mock-dot y"></div>
+          <div class="mock-dot g"></div>
+          <span style="color:#3a4f6a;font-size:9px;margin-left:4px;letter-spacing:0.1em;">SPLUNK ENTERPRISE · FRAUD MONITOR</span>
+        </div>
+        <div class="mock-panels">
+          <div class="mock-panel">
+            <div class="mock-panel-label">High-Value Alerts</div>
+            <div class="mock-stat">247</div>
+            <div class="mock-bar-chart">
+              <div class="mock-bar-row"><div class="mock-bar-label">MON</div><div class="mock-bar-fill" style="width:70%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">TUE</div><div class="mock-bar-fill" style="width:45%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">WED</div><div class="mock-bar-fill" style="width:90%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">THU</div><div class="mock-bar-fill" style="width:55%;"></div></div>
+            </div>
+          </div>
+          <div class="mock-panel">
+            <div class="mock-panel-label">Auth Failures / Hour</div>
+            <div class="mock-stat orange">1,042</div>
+            <div class="mock-bar-chart">
+              <div class="mock-bar-row"><div class="mock-bar-label">00h</div><div class="mock-bar-fill o" style="width:20%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">06h</div><div class="mock-bar-fill o" style="width:15%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">12h</div><div class="mock-bar-fill o" style="width:60%;"></div></div>
+              <div class="mock-bar-row"><div class="mock-bar-label">18h</div><div class="mock-bar-fill o" style="width:95%;"></div></div>
+            </div>
+          </div>
+          <div class="mock-spl">
+            <div class="mock-panel-label">SPL Query — Geo Anomaly Detection</div>
+            <div class="spl-line"><span class="spl-kw">index</span><span class="spl-op">=</span><span class="spl-str">transactions</span> <span class="spl-kw">sourcetype</span><span class="spl-op">=</span><span class="spl-str">financial_logs</span></div>
+            <div class="spl-line">| <span class="spl-fn">iplocation</span> <span class="spl-str">src_ip</span></div>
+            <div class="spl-line">| <span class="spl-fn">stats</span> <span class="spl-fn">count</span> <span class="spl-kw">by</span> <span class="spl-str">Country</span>, <span class="spl-str">user_id</span></div>
+            <div class="spl-line">| <span class="spl-fn">where</span> <span class="spl-str">count</span> <span class="spl-op">&gt;</span> <span class="spl-val">1</span> <span class="spl-kw">AND</span> <span class="spl-str">Country</span> <span class="spl-op">!=</span> <span class="spl-str">"United States"</span></div>
+            <div class="spl-line">| <span class="spl-fn">sort</span> <span class="spl-op">-</span><span class="spl-str">count</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-tags">
+        <span class="tag">Splunk Enterprise</span>
+        <span class="tag">SPL</span>
+        <span class="tag">Dashboard Studio</span>
+        <span class="tag">Log Analysis</span>
+        <span class="tag">Anomaly Detection</span>
+        <span class="tag">SIEM</span>
+      </div>
+      <a href="https://github.com/franzx0" class="card-link">View on GitHub →</a>
+    </div>
+
+    <!-- DEFENSE IN DEPTH -->
+    <div class="project-card">
+      <div class="card-number">02</div>
+      <span class="card-badge badge-sec">Security Analysis</span>
+      <div class="card-title">Defense-in-Depth Healthcare Security Assessment</div>
+      <p class="card-desc">
+        Conducted a layered security analysis for a simulated healthcare provider using NIST frameworks.
+        Identified attack vectors across physical, network, and application layers and proposed tiered mitigations.
+      </p>
+      <div class="card-tags">
+        <span class="tag">NIST CSF</span>
+        <span class="tag">Risk Assessment</span>
+        <span class="tag">Defense-in-Depth</span>
+        <span class="tag">Healthcare IT</span>
+      </div>
+    </div>
+
+    <!-- JWT AUTH -->
+    <div class="project-card">
+      <div class="card-number">03</div>
+      <span class="card-badge badge-web">Backend · Auth</span>
+      <div class="card-title">JWT Authentication API with bcrypt</div>
+      <p class="card-desc">
+        Secure Node.js/Express REST API with JWT token-based auth and bcrypt password hashing.
+        Full auth middleware, protected routes, and end-to-end testing via PowerShell.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Node.js</span>
+        <span class="tag">Express</span>
+        <span class="tag">JWT</span>
+        <span class="tag">bcrypt</span>
+        <span class="tag">REST API</span>
+      </div>
+      <a href="https://github.com/franzx0" class="card-link">GitHub →</a>
+    </div>
+
+    <!-- CAR API -->
+    <div class="project-card">
+      <div class="card-number">04</div>
+      <span class="card-badge badge-web">Full-Stack · Automotive</span>
+      <div class="card-title">Car Manufacturers REST API</div>
+      <p class="card-desc">
+        Database-driven CRUD REST API built from scratch with Node.js, Express, and SQLite.
+        Domain-themed around automotive data — manufacturers, models, specs — reflecting my engineering background.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Node.js</span>
+        <span class="tag">SQLite</span>
+        <span class="tag">Sequelize</span>
+        <span class="tag">REST API</span>
+        <span class="tag">CRUD</span>
+      </div>
+      <a href="https://github.com/franzx0/Assignment-2-Database-Driven-API" target="_blank" class="card-link">GitHub →</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-label">Stack</div>
+  <h2>Skills</h2>
+  <div class="skills-grid">
+
+    <div class="skill-group">
+      <div class="skill-group-title">Cybersecurity</div>
+      <ul class="skill-list">
+        <li>Splunk Enterprise & SPL</li>
+        <li>SIEM Operations</li>
+        <li>NIST Cybersecurity Framework</li>
+        <li>Log Analysis & Threat Hunting</li>
+        <li>Defense-in-Depth Analysis</li>
+      </ul>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-title">Development</div>
+      <ul class="skill-list">
+        <li>JavaScript / Node.js</li>
+        <li>Express.js REST APIs</li>
+        <li>SQL / SQLite / Sequelize</li>
+        <li>JWT Auth & bcrypt</li>
+        <li>Git / GitHub</li>
+      </ul>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-title">Automotive & Embedded</div>
+      <ul class="skill-list">
+        <li>ECU Tuning Platforms (FuelTech, Haltech, MoTeC)</li>
+        <li>OBD-II / CAN Bus</li>
+        <li>Powertrain & Engine Systems</li>
+        <li>Embedded Firmware Interest</li>
+        <li>Vehicle Diagnostics</li>
+      </ul>
+    </div>
+
+    <div class="skill-group">
+      <div class="skill-group-title">Languages</div>
+      <ul class="skill-list">
+        <li>Portuguese — Native</li>
+        <li>English — Professional</li>
+        <li>PowerShell / Bash CLI</li>
+        <li>SPL (Splunk Processing Language)</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">Background</div>
+  <h2>About Me</h2>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        I'm a Computer Science freshman at <strong>Oakland City University</strong> in Indiana,
+        with a non-traditional path that sets me apart: a foundation in
+        <strong>Mechanical Engineering from UTFPR (Brazil)</strong>, service in the
+        <strong>Brazilian Army</strong>, and a lifelong obsession with internal combustion engines.
+      </p>
+      <p>
+        My long-term goal is the intersection nobody talks about — the place where
+        <strong>software security meets automotive embedded systems</strong>. Modern vehicles
+        are networked computers on wheels, and the same principles I practiced building
+        Splunk fraud dashboards apply directly to CAN bus anomaly detection and ECU firmware integrity.
+      </p>
+      <p>
+        I'm targeting roles at companies like <strong>Bosch</strong> and <strong>Garmin</strong>
+        where engineering depth and security awareness both matter.
+      </p>
+
+      <div class="timeline" style="margin-top:36px;">
+        <div class="tl-item">
+          <div class="tl-date">2024 – Present</div>
+          <div class="tl-title">B.S. Computer Science</div>
+          <div class="tl-org">Oakland City University · Indiana, USA</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">Prior</div>
+          <div class="tl-title">Infantry Soldier</div>
+          <div class="tl-org">Brazilian Army · Paraná, Brazil</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">Prior</div>
+          <div class="tl-title">Mechanical Engineering Studies</div>
+          <div class="tl-org">UTFPR · Brazil</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-stats">
+      <div class="stat-box">
+        <span class="stat-number">4</span>
+        <span class="stat-label">Projects completed this semester</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">2</span>
+        <span class="stat-label">Languages spoken</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">∞</span>
+        <span class="stat-label">Hours thinking about engines</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">1</span>
+        <span class="stat-label">Clear career mission</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<div class="contact-section" id="contact">
+  <div class="contact-inner">
+    <div class="contact-left">
+      <h2>Let's Connect</h2>
+      <p>
+        Open to internship opportunities in cybersecurity, embedded systems, or automotive software engineering.
+        Let's talk about what we can build together.
+      </p>
+    </div>
+    <div class="contact-links">
+      <a href="mailto:priesalexandre@myocu.oak.edu" class="contact-link">
+        <span class="lbl">Email</span> priesalexandre@myocu.oak.edu
+      </a>
+      <a href="https://github.com/franzx0" target="_blank" class="contact-link">
+        <span class="lbl">GitHub</span> github.com/franzx0
+      </a>
+      <a href="https://www.linkedin.com/in/alexandre-junior-4835aa174/" target="_blank" class="contact-link">
+        <span class="lbl">LinkedIn</span> linkedin.com/in/alexandre-junior-4835aa174
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Alexandre Franz Pries Jr. · Built with HTML/CSS · Hosted on GitHub Pages
+</footer>
+
+</body>
+</html>
